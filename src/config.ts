@@ -1,10 +1,10 @@
 // Todo lo que cambia con frecuencia vive aquí. Edita este archivo y el sitio se reconstruye.
 
 export const site = {
-  name: 'Ana María López Moreno',
+  name: 'Ana López',
   handle: 'darkanita',
   url: 'https://darkanita.dev',
-  tagline: 'Construyo lo que enseño.',
+  tagline: 'Construyo lo que enseño: IA, MLOps y agentes, en español, desde Medellín.',
   description:
     'Educadora técnica en IA, MLOps y agentes. Líder de DB Crew LATAM, MLflow Ambassador y Databricks Student Fellow. Medellín, Colombia.',
   location: 'Medellín, Colombia',

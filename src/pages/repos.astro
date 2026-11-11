@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import { social } from '../config';
+import { catalog } from '../data/profile';
+import { getStars } from '../lib/feeds';
+
+const stars = await getStars();
+const repoUrl = (r: { name: string; owner?: string }) => `https://github.com/${r.owner ?? social.github}/${r.name}`;
+---
+<Base title="Repos" description="Repos de Ana López para aprender datos, MLOps, GenAIOps y agentes de IA, con lo que enseña cada uno.">
+  <h1>Repos</h1>
+  <p class="page-intro">
+    Material abierto de mis cursos y talleres, ordenado como una ruta: de datos a MLOps, luego GenAIOps y agentes.
+    Cada repo trae su propia guía para seguirlo por tu cuenta.
+  </p>
+  {catalog.map((group) => (
+    <section class="topic" aria-labelledby={`t-${group.topic}`}>
+      <h2 id={`t-${group.topic}`}>{group.topic}</h2>
+      <ul class="rows">
+        {group.repos.map((r) => (
+          <li>
+            <span>
+              <a class="t" href={repoUrl(r)}>{r.name}</a>
+              {stars.get(r.name) ? <span class="stars">★ {stars.get(r.name)}</span> : null}
+              <span class="d">{r.teaches}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  <p class="more"><a href={`https://github.com/${social.github}?tab=repositories`}>Todos mis repos en GitHub</a></p>
+</Base>

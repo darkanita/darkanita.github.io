@@ -4,22 +4,22 @@ import Base from '../layouts/Base.astro';
 import { site, social, links } from '../config';
 
 const items = [
-  { name: 'Mi sitio', href: '/', main: true },
+  { name: 'Mi sitio', href: '/' },
   social.youtube && { name: 'YouTube', href: `https://www.youtube.com/@${social.youtube}` },
   social.medium && { name: 'Artículos en Medium', href: `https://medium.com/@${social.medium}` },
-  { name: 'Repos en GitHub', href: `https://github.com/${social.github}` },
+  { name: 'Repos para aprender', href: '/repos' },
   { name: 'Aprende gratis en Waddled', href: links.waddled },
   { name: 'Comunidad DB Crew LATAM', href: links.community },
   social.linkedin && { name: 'LinkedIn', href: `https://www.linkedin.com/in/${social.linkedin}` },
-  { name: 'Charlas, talleres y patrocinios', href: `mailto:${site.email}` },
-].filter(Boolean) as { name: string; href: string; main?: boolean }[];
+  { name: 'Charlas, talleres y colaboraciones', href: `mailto:${site.email}` },
+].filter(Boolean) as { name: string; href: string }[];
 ---
-<Base title={`Enlaces de ${site.handle}`}>
-  <main id="main" class="links-page">
-    <h1>@{site.handle}</h1>
+<Base title="Enlaces" bare>
+  <div class="links-page">
+    <h1>{site.name}</h1>
     <p>IA, MLOps y agentes, en español.</p>
     <ul>
-      {items.map((i) => <li><a class={i.main ? 'big main' : 'big'} href={i.href}>{i.name}</a></li>)}
+      {items.map((i) => <li><a href={i.href}>{i.name}</a></li>)}
     </ul>
-  </main>
+  </div>
 </Base>

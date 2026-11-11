@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import { talks } from '../data/profile';
+
+const sorted = [...talks].sort((a, b) => b.year - a.year);
+---
+<Base title="Charlas" description="Charlas y talleres de Ana López sobre MLOps, GenAIOps y agentes de IA.">
+  <h1>Charlas</h1>
+  <p class="page-intro">Talleres y charlas sobre MLOps, GenAIOps y agentes. Casi todas vienen con un repo para repetir lo que mostré.</p>
+  <ul class="rows">
+    {sorted.map((t) => (
+      <li>
+        <span class="k">{t.year}</span>
+        <span>
+          <span class="t">{t.event}</span>
+          <span class="d">{t.title}</span>
+          {t.repo && <a class="x" href={t.repo}>Material en GitHub</a>}
+        </span>
+      </li>
+    ))}
+  </ul>
+</Base>

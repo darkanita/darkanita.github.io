@@ -1,8 +1,7 @@
 // Datos traídos al compilar (no en el navegador): rápido para quien visita y sin límites de API.
-// Si una fuente falla, el sitio compila igual y la sección muestra su estado vacío.
+// Si una fuente falla, el sitio compila igual y esa parte simplemente no aparece.
 import { XMLParser } from 'fast-xml-parser';
 import { social } from '../config';
-import { featuredRepos } from '../data/profile';
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '' });
 
@@ -17,55 +16,26 @@ async function get(url: string, headers: Record<string, string> = {}) {
   }
 }
 
-export type Repo = {
-  name: string;
-  url: string;
-  description: string;
-  stars: number | null;
-  forks: number | null;
-  language: string;
-  updated: string;
-};
+let starsCache: Promise<Map<string, number>> | undefined;
 
-export async function getRepos(limit = 10): Promise<Repo[]> {
-  const token = import.meta.env.GITHUB_TOKEN ?? process.env.GITHUB_TOKEN;
-  const res = await get(`https://api.github.com/users/${social.github}/repos?per_page=100&type=owner`, {
-    Accept: 'application/vnd.github+json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  });
-  const fallback = featuredRepos.map((name) => ({
-    name,
-    url: `https://github.com/${social.github}/${name}`,
-    description: '',
-    stars: null,
-    forks: null,
-    language: '',
-    updated: '',
-  }));
-  if (!res) return fallback.slice(0, limit);
-
-  const all: any[] = await res.json();
-  const repos: Repo[] = all
-    .filter((r) => !r.fork && !r.archived)
-    .map((r) => ({
-      name: r.name,
-      url: r.html_url,
-      description: r.description ?? '',
-      stars: r.stargazers_count,
-      forks: r.forks_count,
-      language: r.language ?? '',
-      updated: r.pushed_at,
-    }));
-  // Los destacados entran siempre; los huecos restantes son para los más estrellados.
-  const byStars = (a: Repo, b: Repo) => (b.stars ?? 0) - (a.stars ?? 0);
-  const featured = repos.filter((r) => featuredRepos.includes(r.name));
-  const rest = repos.filter((r) => !featuredRepos.includes(r.name)).sort(byStars);
-  return [...featured, ...rest].slice(0, Math.max(limit, featured.length)).sort(byStars);
+/** Estrellas de cada repo de la cuenta, por nombre. Vacío si GitHub no responde. */
+export function getStars(): Promise<Map<string, number>> {
+  starsCache ??= (async () => {
+    const token = import.meta.env.GITHUB_TOKEN ?? process.env.GITHUB_TOKEN;
+    const res = await get(`https://api.github.com/users/${social.github}/repos?per_page=100&type=owner`, {
+      Accept: 'application/vnd.github+json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    });
+    if (!res) return new Map();
+    const all: any[] = await res.json();
+    return new Map(all.map((r) => [r.name as string, r.stargazers_count as number]));
+  })();
+  return starsCache;
 }
 
-export type Post = { title: string; url: string; date: string; tags: string[] };
+export type Post = { title: string; url: string; date: string };
 
-export async function getMediumPosts(limit = 6): Promise<Post[]> {
+export async function getMediumPosts(limit = 20): Promise<Post[]> {
   if (!social.medium) return [];
   const res = await get(`https://medium.com/feed/@${social.medium}`);
   if (!res) return [];
@@ -75,11 +45,10 @@ export async function getMediumPosts(limit = 6): Promise<Post[]> {
     title: String(it.title),
     url: String(it.link).split('?')[0],
     date: new Date(it.pubDate).toISOString(),
-    tags: [it.category ?? []].flat().map(String).slice(0, 3),
   }));
 }
 
-export type Video = { title: string; url: string; date: string; thumb: string };
+export type Video = { title: string; url: string; date: string };
 
 export async function getVideos(limit = 3): Promise<Video[]> {
   if (!social.youtubeChannelId) return [];
@@ -91,6 +60,8 @@ export async function getVideos(limit = 3): Promise<Video[]> {
     title: String(e.title),
     url: e.link?.href ?? '',
     date: e.published,
-    thumb: e['media:group']?.['media:thumbnail']?.url ?? '',
   }));
 }
+
+export const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });

@@ -1,50 +1,32 @@
-// Credenciales, charlas, cursos y servicios. Son datos, no diseño: edítalos libremente.
+// Credenciales, charlas y catálogo de repos. Son datos, no diseño: edítalos libremente.
 
-export type Credential = { title: string; org: string; detail: string; href?: string };
+export type Credential = { text: string; link?: { label: string; href: string } };
 
 export const credentials: Credential[] = [
-  {
-    title: 'Líder de comunidad',
-    org: 'DB Crew LATAM',
-    detail: 'Comunidad abierta de datos e IA en Latinoamérica: grupos de estudio, talleres y meetups.',
-    href: 'https://dbcrewlatam.com/',
-  },
-  {
-    title: 'MLflow Ambassador',
-    org: 'MLflow',
-    detail: 'Divulgo MLOps y GenAIOps con MLflow en español.',
-  },
-  {
-    title: 'Databricks Student Fellow',
-    org: 'Databricks',
-    detail: 'Acompaño a estudiantes que aprenden datos e IA sobre Databricks.',
-  },
-  {
-    title: 'Databricks Certified Machine Learning Professional',
-    org: 'Databricks',
-    detail: 'Certificación profesional de ML, aprobada en noviembre de 2026.',
-  },
+  { text: 'Líder de la comunidad', link: { label: 'DB Crew LATAM', href: 'https://dbcrewlatam.com/' } },
+  { text: 'MLflow Ambassador y Databricks Student Fellow' },
+  { text: 'Databricks Certified Machine Learning Professional' },
 ];
 
 export type Talk = { year: number; event: string; title: string; repo?: string };
 
-// TODO: revisa los títulos; están inferidos de los repos de cada charla.
+// TODO: revisa los títulos; salen de los README de cada repo.
 export const talks: Talk[] = [
   {
     year: 2026,
     event: 'Microsoft',
-    title: 'Smarter Together: orchestrating multi-agent AI systems with A2A and MCP on containers',
+    title: 'Smarter Together: orquestando sistemas multiagente con A2A y MCP en contenedores',
   },
   {
     year: 2026,
     event: 'PyCon Colombia',
-    title: 'Taller de GenAIOps con Databricks y MLflow',
+    title: 'Taller de GenAIOps',
     repo: 'https://github.com/databrickscrewlatam/GenAIOps_Pycon2026',
   },
   {
     year: 2025,
     event: 'KubeCon',
-    title: 'Sistemas multiagente sobre Kubernetes',
+    title: 'Sistema multiagente en AKS con Semantic Kernel, A2A y MCP',
     repo: 'https://github.com/darkanita/MultiAgent-kubecon2025',
   },
   {
@@ -56,50 +38,59 @@ export const talks: Talk[] = [
   {
     year: 2023,
     event: 'PyCon Colombia',
-    title: 'Taller de MLOps',
+    title: 'Taller de MLOps con GitHub Actions y Weights & Biases',
     repo: 'https://github.com/darkanita/MLOps_wsPycon2023',
   },
 ];
 
-export type Course = { name: string; summary: string; length: string };
+// Catálogo de repos: qué aprende quien lo abre. El orden de los temas es una ruta de aprendizaje.
+// Las estrellas se completan solas con la API de GitHub al compilar.
+export type RepoEntry = { name: string; teaches: string; owner?: string; featured?: boolean };
+export type Topic = { topic: string; repos: RepoEntry[] };
 
-export const courses: Course[] = [
+export const catalog: Topic[] = [
   {
-    name: 'Agentes Zero to Hero',
-    summary: 'De cero a agentes de IA en producción, solo con herramientas gratuitas.',
-    length: '10 sesiones',
+    topic: 'Datos',
+    repos: [
+      { name: 'taller-webscraping-python', teaches: 'Extraer noticias de BBC Mundo con Beautiful Soup y con Selenium, y cuándo usar cada uno.' },
+      { name: 'apache-airflow-workshop', teaches: 'Los conceptos de Airflow (DAGs, tareas, operadores, arquitectura) en una presentación interactiva.' },
+      { name: 'airflow-etl-dashboard', teaches: 'Un ETL completo con Airflow y Docker que carga datos en SQLite y los muestra en Streamlit.' },
+      { name: 'bbc-news-etl-pipeline', teaches: 'Un pipeline que guarda noticias en PostgreSQL en Azure y se ejecuta cada hora con GitHub Actions.' },
+    ],
   },
   {
-    name: 'Machine Learning e IA',
-    summary: 'De la regresión a redes neuronales, visión por computador y automatización.',
-    length: '11 sesiones',
+    topic: 'MLOps',
+    repos: [
+      { name: 'mlops-zero-to-hero', teaches: 'Curso de 20 horas: el ciclo de vida de ML con MLflow, de la experimentación al despliegue.', featured: true },
+      { name: 'MLOps_wsPycon2023', teaches: 'Taller de PyCon 2023: pipelines de ML orquestados con GitHub Actions y Weights & Biases.' },
+      { name: 'mlops-databricks-github-actions', teaches: 'MLOps solo con herramientas gratuitas: entrenamiento, registro de modelos y CI/CD con Databricks.' },
+      { name: 'bakehouse-mlops', teaches: 'Pronóstico de ventas en Databricks Free Edition con feature table, Unity Catalog y CI/CD.' },
+    ],
   },
   {
-    name: 'MLOps en Databricks',
-    summary: 'Spark, Delta Lake, MLflow, AutoML y Feature Store con CI/CD en GitHub.',
-    length: '5 sesiones',
+    topic: 'GenAIOps y RAG',
+    repos: [
+      { name: 'GenAIOps_Pycon2025', teaches: 'Construir, evaluar y automatizar un chatbot RAG sobre PDFs, con un recorrido guiado de 60 a 90 minutos.', featured: true },
+      { name: 'GenAIOps_Databricks', teaches: 'Un pipeline RAG en Databricks con LangChain y FAISS, registrado completo en MLflow.' },
+      { name: 'bakehouse-genaiops', teaches: 'Un asistente sobre manuales PDF con jueces de MLflow 3 y una puerta de calidad en CI/CD.' },
+      { name: 'rag-chatbot-foundry-sk', teaches: 'Un chatbot RAG con Azure AI Foundry, Azure AI Search y Semantic Kernel.' },
+      { name: 'genaiops-evaluation-lab', teaches: 'Evaluar calidad, seguridad y agentes en Azure AI Foundry.' },
+      { name: 'azure-ai-foundry-observability-demo', teaches: 'Trazas con OpenTelemetry, monitoreo y evaluación continua de agentes en Foundry.' },
+    ],
   },
-];
-
-export type Service = { name: string; detail: string };
-
-export const services: Service[] = [
-  { name: 'Charlas y keynotes', detail: 'MLOps, GenAIOps, agentes y comunidades de datos.' },
-  { name: 'Talleres para equipos', detail: 'Prácticos, con repos listos para usar después.' },
-  { name: 'Mentorías', detail: 'Rutas de aprendizaje y certificaciones Databricks y Azure.' },
-  { name: 'Patrocinios y colaboraciones', detail: 'Contenido técnico en español para YouTube, Instagram y TikTok.' },
-];
-
-// Repos que siempre aparecen, aunque no estén entre los más estrellados.
-// El sitio completa estrellas y descripción con la API de GitHub al compilar.
-export const featuredRepos = [
-  'GenAIOps_Pycon2025',
-  'MLOps_wsPycon2023',
-  'LLMOps_wsPycon2024',
-  'ai-agent-databricks',
-  'bakehouse-mlops',
-  'bakehouse-genaiops',
-  'MultiAgent-AKS-MAF',
-  'mlops-zero-to-hero',
-  'GenAIOps_Databricks',
+  {
+    topic: 'Agentes',
+    repos: [
+      { name: 'ai-agent-databricks', teaches: 'Un agente con LangGraph, herramientas de Unity Catalog, RAG, evaluación y MCP, en Databricks Free Edition.', featured: true },
+      { name: 'ia-para-desarrolladores', teaches: 'Curso de 20 horas con GitHub Copilot y Claude Code: instrucciones, skills, agentes y hooks para un equipo.' },
+      { name: 'MultiAgent-kubecon2025', teaches: 'Demo de KubeCon 2025: un asistente de viajes multiagente con Semantic Kernel, A2A y MCP sobre AKS.' },
+      { name: 'MultiAgent-AKS-MAF', teaches: 'Orquestación multiagente con Microsoft Agent Framework, A2A y MCP en Kubernetes.' },
+    ],
+  },
+  {
+    topic: 'Certificaciones',
+    repos: [
+      { name: 'AI-102-Azure-AI-Engineer', teaches: 'Preparación para la AI-102 en 6 sesiones, con laboratorios en Codespaces.' },
+    ],
+  },
 ];

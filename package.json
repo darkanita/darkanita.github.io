@@ -15,6 +15,7 @@
   },
   "homepage": "https://github.com/darkanita/darkanita.github.io#readme",
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "astro": "^7.4.10",
     "fast-xml-parser": "^5.12.0"
   },
