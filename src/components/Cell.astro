@@ -1,0 +1,22 @@
+---
+// Una celda de notebook: número de ejecución, código de entrada y su salida.
+interface Props {
+  n: number;
+  id: string;
+  code: string;
+  label: string;
+}
+const { n, id, code, label } = Astro.props;
+---
+<section class="cell" id={id} aria-labelledby={`${id}-h`}>
+  <div class="prompt" aria-hidden="true">
+    <span class="in">In [{n}]:</span>
+  </div>
+  <div class="body">
+    <h2 class="sr-only" id={`${id}-h`}>{label}</h2>
+    <pre class="input"><code set:html={code} /></pre>
+    <div class="output">
+      <slot />
+    </div>
+  </div>
+</section>
