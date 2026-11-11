@@ -1,36 +1,50 @@
 ---
+import '@fontsource-variable/bricolage-grotesque/standard.css';
 import '../styles/global.css';
-import { site } from '../config';
+import { site, social } from '../config';
 
 interface Props {
   title?: string;
   description?: string;
+  bare?: boolean;
 }
-const { title = `${site.handle} | ${site.name}`, description = site.description } = Astro.props;
+const { title, description = site.description, bare = false } = Astro.props;
+const fullTitle = title ? `${title} | ${site.name}` : `${site.name} (${site.handle})`;
 const canonical = new URL(Astro.url.pathname, site.url).href;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const nav = [
+  { label: 'Charlas', href: '/charlas' },
+  { label: 'Repos', href: '/repos' },
+  social.medium && { label: 'Blog', href: '/blog' },
+  { label: 'Contacto', href: '#contacto' },
+].filter(Boolean) as { label: string; href: string }[];
+
+const contact = [
+  { label: site.email, href: `mailto:${site.email}` },
+  social.linkedin && { label: 'LinkedIn', href: `https://www.linkedin.com/in/${social.linkedin}` },
+  social.github && { label: 'GitHub', href: `https://github.com/${social.github}` },
+  social.medium && { label: 'Medium', href: `https://medium.com/@${social.medium}` },
+  social.youtube && { label: 'YouTube', href: `https://www.youtube.com/@${social.youtube}` },
+  social.instagram && { label: 'Instagram', href: `https://www.instagram.com/${social.instagram}` },
+  social.tiktok && { label: 'TikTok', href: `https://www.tiktok.com/@${social.tiktok}` },
+].filter(Boolean) as { label: string; href: string }[];
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#17132E" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap"
-    />
-    <script is:inline>document.documentElement.classList.add('js');</script>
     <script
       type="application/ld+json"
       set:html={JSON.stringify({
@@ -41,11 +55,34 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
         url: site.url,
         jobTitle: 'Educadora técnica en IA y MLOps',
         address: { '@type': 'PostalAddress', addressLocality: 'Medellín', addressCountry: 'CO' },
+        sameAs: contact.filter((c) => c.href.startsWith('http')).map((c) => c.href),
       })}
     />
   </head>
   <body>
     <a class="skip" href="#main">Saltar al contenido</a>
-    <slot />
+    <div class="wrap">
+      {!bare && (
+        <header class="top">
+          <a class="brand" href="/">{site.handle}</a>
+          <nav aria-label="Principal">
+            {nav.map((n) => (
+              <a href={n.href} aria-current={path === n.href ? 'page' : undefined}>{n.label}</a>
+            ))}
+          </nav>
+        </header>
+      )}
+      <main id="main">
+        <slot />
+      </main>
+      {!bare && (
+        <footer id="contacto">
+          <p class="foot-note">Para charlas, talleres, mentorías o colaboraciones, escríbeme.</p>
+          <ul class="contact">
+            {contact.map((c) => <li><a href={c.href} rel={c.href.startsWith('http') ? 'me' : undefined}>{c.label}</a></li>)}
+          </ul>
+        </footer>
+      )}
+    </div>
   </body>
 </html>

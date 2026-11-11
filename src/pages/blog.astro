@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { social } from '../config';
+import { getMediumPosts, fmtDate } from '../lib/feeds';
+
+const posts = await getMediumPosts(30);
+---
+<Base title="Blog" description="Artículos de Ana López sobre MLOps, GenAIOps, agentes y certificaciones de Databricks.">
+  <h1>Blog</h1>
+  <p class="page-intro">Escribo en Medium sobre lo que voy construyendo y aprendiendo.</p>
+  {posts.length > 0 ? (
+    <ul class="rows">
+      {posts.map((p) => (
+        <li><span class="k">{fmtDate(p.date).split(' ').slice(1).join(' ')}</span><a class="t" href={p.url}>{p.title}</a></li>
+      ))}
+    </ul>
+  ) : null}
+  {social.medium && <p class="more"><a href={`https://medium.com/@${social.medium}`}>Leer en Medium</a></p>}
+</Base>
