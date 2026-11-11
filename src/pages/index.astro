@@ -1,0 +1,217 @@
+---
+import Base from '../layouts/Base.astro';
+import Cell from '../components/Cell.astro';
+import { site, social, links } from '../config';
+import { credentials, talks, courses, services } from '../data/profile';
+import { getRepos, getMediumPosts, getVideos } from '../lib/feeds';
+import { py } from '../lib/py';
+
+const [repos, posts, videos] = await Promise.all([getRepos(10), getMediumPosts(6), getVideos(3)]);
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+
+const socials = [
+  social.linkedin && { name: 'LinkedIn', href: `https://www.linkedin.com/in/${social.linkedin}` },
+  social.github && { name: 'GitHub', href: `https://github.com/${social.github}` },
+  social.medium && { name: 'Medium', href: `https://medium.com/@${social.medium}` },
+  social.youtube && { name: 'YouTube', href: `https://www.youtube.com/@${social.youtube}` },
+  social.instagram && { name: 'Instagram', href: `https://www.instagram.com/${social.instagram}` },
+  social.tiktok && { name: 'TikTok', href: `https://www.tiktok.com/@${social.tiktok}` },
+].filter(Boolean) as { name: string; href: string }[];
+
+// Las celdas se numeran en orden de ejecución; las que no tienen datos no se ejecutan.
+let n = 0;
+const next = () => ++n;
+const years = [...new Set(talks.map((t) => t.year))].sort((a, b) => b - a);
+---
+<Base>
+  <header class="topbar">
+    <a class="brand" href="/">darkanita<span>.ipynb</span></a>
+    <nav aria-label="Secciones">
+      <a href="#charlas">Charlas</a>
+      <a href="#repos">Repos</a>
+      {posts.length > 0 && <a href="#blog">Blog</a>}
+      <a href="#cursos">Cursos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </header>
+
+  <main id="main" class="notebook">
+    <section class="cell hero" id="inicio" aria-labelledby="hero-h">
+      <div class="prompt" aria-hidden="true">
+        <span class="in" data-counter>In [{next()}]:</span>
+      </div>
+      <div class="body">
+        <pre class="input"><code data-type set:html={py(`from darkanita import ana\nana.presentarse()`)} /></pre>
+        <div class="output" data-output>
+          <p class="who">{site.name}, en internet <strong>@{site.handle}</strong></p>
+          <h1 id="hero-h">{site.tagline}</h1>
+          <p class="lede">
+            Enseño IA, MLOps y agentes con código que puedes correr hoy mismo. Lidero{' '}
+            <a href={links.community}>DB Crew LATAM</a>, soy MLflow Ambassador y Databricks Student Fellow, y estoy
+            construyendo{' '}<a href={links.waddled}>Waddled</a>, educación en IA gratuita para Latinoamérica.
+          </p>
+          <div class="actions">
+            <a class="btn primary" href={`mailto:${site.email}`}>Escríbeme</a>
+            <a class="btn" href="#charlas">Ver charlas</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <Cell n={next()} id="credenciales" label="Credenciales" code={py('ana.credenciales()')}>
+      <ul class="creds">
+        {credentials.map((c) => (
+          <li>
+            <span class="cred-title">{c.href ? <a href={c.href}>{c.title}</a> : c.title}</span>
+            <span class="cred-org">{c.org}</span>
+            <span class="cred-detail">{c.detail}</span>
+          </li>
+        ))}
+      </ul>
+    </Cell>
+
+    <Cell n={next()} id="charlas" label="Charlas" code={py(`ana.charlas.sort_values("año", ascending=False)`)}>
+      <ol class="talks">
+        {years.map((y) => (
+          <li class="year">
+            <span class="y">{y}</span>
+            <ul>
+              {talks.filter((t) => t.year === y).map((t) => (
+                <li>
+                  <span class="event">{t.event}</span>
+                  <span class="talk-title">{t.title}</span>
+                  {t.repo && <a class="repo-link" href={t.repo}>Material en GitHub</a>}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </Cell>
+
+    <Cell
+      n={next()}
+      id="repos"
+      label="Repositorios"
+      code={py(`repos = gh.repos("${social.github}")\nrepos.nlargest(${repos.length}, "stars")`)}
+    >
+      <div class="df-wrap" tabindex="0" role="region" aria-label="Repositorios ordenados por estrellas">
+        <table class="df">
+          <thead>
+            <tr><th scope="col"></th><th scope="col">repo</th><th scope="col">descripción</th><th scope="col">lenguaje</th><th scope="col" class="num">stars</th></tr>
+          </thead>
+          <tbody>
+            {repos.map((r, i) => (
+              <tr>
+                <th scope="row" class="idx">{i}</th>
+                <td><a href={r.url}>{r.name}</a></td>
+                <td class="desc">{r.description || <span class="nan">NaN</span>}</td>
+                <td class="lang">{r.language || <span class="nan">NaN</span>}</td>
+                <td class="num">{r.stars ?? <span class="nan">NaN</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="df-shape">{repos.length} rows × 4 columns. <a href={`https://github.com/${social.github}?tab=repositories`}>Todos mis repos en GitHub</a></p>
+    </Cell>
+
+    {posts.length > 0 && (
+      <Cell n={next()} id="blog" label="Artículos" code={py(`medium.feed("@${social.medium}").head(${posts.length})`)}>
+        <ul class="posts">
+          {posts.map((p) => (
+            <li>
+              <time datetime={p.date}>{fmtDate(p.date)}</time>
+              <a href={p.url}>{p.title}</a>
+            </li>
+          ))}
+        </ul>
+        <p><a href={`https://medium.com/@${social.medium}`}>Leer todo en Medium</a></p>
+      </Cell>
+    )}
+
+    {videos.length > 0 && (
+      <Cell n={next()} id="videos" label="Videos" code={py(`youtube.ultimos(${videos.length})`)}>
+        <ul class="videos">
+          {videos.map((v) => (
+            <li>
+              <a href={v.url}>
+                <img src={v.thumb} alt="" loading="lazy" width="480" height="360" />
+                <span>{v.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Cell>
+    )}
+
+    <Cell n={next()} id="cursos" label="Cursos" code={py('waddled.cursos()')}>
+      <ul class="courses">
+        {courses.map((c) => (
+          <li>
+            <span class="course-name">{c.name}</span>
+            <span class="course-len">{c.length}</span>
+            <span class="course-sum">{c.summary}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="waddled">
+        Estoy llevando estos cursos a <a href={links.waddled}>Waddled.org</a>, una plataforma abierta y gratuita para
+        aprender IA en español.
+      </p>
+    </Cell>
+
+    <Cell n={next()} id="contacto" label="Contacto" code={py('ana.trabajemos()')}>
+      <ul class="services">
+        {services.map((s) => (
+          <li><span class="svc-name">{s.name}</span><span class="svc-detail">{s.detail}</span></li>
+        ))}
+      </ul>
+      <div class="actions">
+        <a class="btn primary" href={`mailto:${site.email}`}>Escribir a {site.email}</a>
+      </div>
+      <ul class="socials">
+        {socials.map((s) => <li><a href={s.href} rel="me">{s.name}</a></li>)}
+      </ul>
+    </Cell>
+
+    <section class="cell empty" aria-hidden="true">
+      <div class="prompt"><span class="in">In [ ]:</span></div>
+      <div class="body"><pre class="input"><code><span class="caret"></span></code></pre></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>{site.location}. Hecho con Astro; repos y artículos se actualizan solos cada día.</p>
+  </footer>
+
+  <script>
+    // Única animación: la primera celda se "ejecuta" al cargar.
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hero = document.querySelector('.hero');
+    const code = hero?.querySelector<HTMLElement>('[data-type]');
+    const counter = hero?.querySelector<HTMLElement>('[data-counter]');
+    if (hero && code && counter && !reduce) {
+      const html = code.innerHTML;
+      const label = counter.textContent;
+      const text = code.textContent ?? '';
+      counter.textContent = 'In [*]:';
+      code.textContent = '';
+      let i = 0;
+      const tick = () => {
+        code.textContent = text.slice(0, ++i);
+        if (i < text.length) return setTimeout(tick, 28);
+        code.innerHTML = html;
+        setTimeout(() => {
+          counter.textContent = label;
+          hero.classList.add('ran');
+        }, 260);
+      };
+      setTimeout(tick, 350);
+    } else {
+      hero?.classList.add('ran');
+    }
+  </script>
+</Base>

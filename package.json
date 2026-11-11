@@ -1,0 +1,23 @@
+{
+  "name": "darkanita-dev",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darkanita/darkanita.github.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/darkanita/darkanita.github.io/issues"
+  },
+  "homepage": "https://github.com/darkanita/darkanita.github.io#readme",
+  "dependencies": {
+    "astro": "^7.4.10",
+    "fast-xml-parser": "^5.12.0"
+  },
+  "type": "module",
+  "private": true
+}
